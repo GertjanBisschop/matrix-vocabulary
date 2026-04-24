@@ -1,0 +1,17 @@
+matrix_subclasses:
+- id: environmentalmatrix
+  name: "environmental matrix"
+  description: All abiotic environmental compartments in which chemicals can be measured
+  parent_matrix: https://w3id.org/peh/terms/Matrix
+- id: bioticmatrix
+  name: "biotic matrix"
+  description: All biological organisms and their tissues
+  parent_matrix: https://w3id.org/peh/terms/Matrix
+- id: materialmatrix
+  name: "material matrix"
+  description: Non-biological, non-environmental materials used for sampling or exposure assessment 
+  parent_matrix: https://w3id.org/peh/terms/Matrix
+- id: foodmatrix
+  name: "food matrix"
+  description: All edible materials derived from plants or animals that may be analyzed for chemical residues or contaminants
+  parent_matrix: https://w3id.org/peh/terms/Matrix
