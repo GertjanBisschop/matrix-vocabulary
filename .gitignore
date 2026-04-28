@@ -4,3 +4,6 @@ _temp/*
 
 # virtual environments
 venv/*
+.venv/*
+uv.lock
+.codex

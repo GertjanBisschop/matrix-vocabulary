@@ -1,13 +1,80 @@
-# Matrix vocabulary
+## Matrix Vocabulary Dropbox to Nanopublication Template
 
-## HOW TO: Add a matrix to the vocabulary
-- Open a new 'addition request' issue and specify all details.
-- Create a pull request that adds all the approved details to the `data/data.yml` and adds the new term to the changelog.
+This repository is a template for a staged vocabulary workflow:
 
-## HOW TO: Request a modification to an existing matrix in the vocabulary
-- Open a new 'modify term' issue and specify all details.
-- Create a pull request that adds the approved details to the `data/data.yml` and indicates the term as modified in the changelog.
+1. New YAML vocab files are dropped into `dropbox/`.
+2. Processing converts them into RDF assertions in `unpublished/`.
+3. Processed source YAML files move to `archive/`.
+4. Publishing creates nanopublications from `unpublished/`.
+5. Publishing also writes a timestamped term-to-nanopub redirect mapping into `redirect/`.
+6. Successfully published assertion files move to `published/`.
 
-## HOW TO: Request the deprecation of an existing matrix in the vocabulary
-- Open a new 'deprecate term' issue and specify all details.
-- Create a pull request that indicates indicates the deprecation of the term in the changelog in and removes the term from `data/data.yml`
+## Folder Semantics
+
+- `dropbox/`: incoming YAML vocabulary files
+- `archive/`: processed YAML files moved out of dropbox
+- `unpublished/`: generated RDF term assertions waiting for publish
+- `redirect/`: timestamped term identifier to nanopub identifier mappings produced during publishing
+- `published/`: assertions already published as nanopublications
+- `build/`: transient build artifacts
+
+## Local Usage
+
+Install dependencies:
+
+```bash
+uv sync
+```
+
+Download a tagged `peh.yaml` snapshot into `schema/`:
+
+```bash
+make fetch-peh-schema
+```
+
+Override the upstream tag when you want a different schema release:
+
+```bash
+make fetch-peh-schema PEH_SCHEMA_TAG=v0.4.0
+```
+
+Process incoming YAML from `dropbox/`:
+
+```bash
+make pipeline
+```
+
+Dry-run publish (no move to `published/`):
+
+```bash
+make publish-pipeline DRY=--dry-run
+```
+
+Real publish (requires nanopub credentials in environment):
+
+```bash
+export NANOPUB_PRIVATE_KEY=...
+export NANOPUB_PUBLIC_KEY=...
+export INTRO_NANOPUB_URI=...
+make publish-pipeline
+```
+
+Each publish run writes a uniquely named redirect mapping file such as
+`redirect/term-to-nanopub_20260424T120102Z.tsv`.
+
+End-to-end local smoke test:
+
+```bash
+make test-flow
+```
+
+## GitHub Workflows
+
+- `serialize.yaml`: on push to `main` with `dropbox/**` changes, runs `make pipeline` and commits `archive/` + `unpublished/` updates.
+- `test-serialize.yaml`: on PR with `dropbox/**` changes, validates processing behavior.
+- `publish.yaml`: publishes nanopublications on:
+  - release publish (real publish),
+  - tag push (dry-run),
+  - manual `workflow_dispatch` ("Publish mode" input: `dry-run` or `publish`).
+
+In manual real publish mode (`workflow_dispatch` with `publish`), published assertion files are moved from `unpublished/` to `published/`, the new redirect mapping file is committed from `redirect/`, and both changes are pushed.
