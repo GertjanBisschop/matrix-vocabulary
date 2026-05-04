@@ -113,10 +113,15 @@ archive-dropbox: prepare
 	fi; \
 	for src in $$files; do \
 		name=$$(basename "$$src"); \
-		dest="$(ARCHIVE_FOLDER)/$$name"; \
+		stem=$${name%.yaml}; \
+		while :; do \
+			label=$$(python3 -c 'import os, time; alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; value = (int(time.time() * 1000) << 80) | int.from_bytes(os.urandom(10), "big"); print("".join(alphabet[(value >> shift) & 31] for shift in range(125, -1, -5)))'); \
+			dest="$(ARCHIVE_FOLDER)/$${stem}_$${label}.yaml"; \
+			[ ! -e "$$dest" ] && break; \
+		done; \
 		if [ -e "$$dest" ]; then \
-			ts=$$(date -u +%Y%m%d%H%M%S); \
-			dest="$(ARCHIVE_FOLDER)/$${name%.yaml}_$$ts.yaml"; \
+			echo "Refusing to overwrite existing archive file $$dest"; \
+			exit 1; \
 		fi; \
 		mv "$$src" "$$dest"; \
 		echo "Archived $$src -> $$dest"; \
